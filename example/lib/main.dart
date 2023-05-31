@@ -1,8 +1,11 @@
+import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_compress/video_compress.dart';
-import 'package:file_selector/file_selector.dart';
-import 'dart:io';
 import 'package:video_compress_example/video_thumbnail.dart';
 
 void main() {
@@ -34,15 +37,42 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _counter = 'video';
 
+  final _progressStreamController = StreamController<double>.broadcast();
+  Subscription? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _subscription = VideoCompress.compressProgress$.subscribe((progress) {
+      //debugPrint('compressProgress: $progress');
+      log('compressProgress : $progress');
+
+      _progressStreamController.add(progress / 100);
+    }, onDone: () {
+      // _progressStreamController.add(1.0);
+    }, onError: (error) {
+      // showSnackBar(context, error.toString(), Status.FAILED);
+      log('message ::: showSnackBar(context, error.toString(), Status.FAILED)');
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _subscription?.unsubscribe();
+  }
+
   Future<void> _compressVideo() async {
-    var file;
+    XFile? file;
     if (Platform.isMacOS) {
       final typeGroup = XTypeGroup(label: 'videos', extensions: ['mov', 'mp4']);
       file = await openFile(acceptedTypeGroups: [typeGroup]);
     } else {
       final picker = ImagePicker();
       var pickedFile = await picker.pickVideo(source: ImageSource.gallery);
-      file = File(pickedFile!.path);
+      file = XFile(pickedFile!.path);
     }
     if (file == null) {
       return;
@@ -50,9 +80,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await VideoCompress.setLogLevel(0);
     final info = await VideoCompress.compressVideo(
       file.path,
-      quality: VideoQuality.MediumQuality,
+      quality: VideoQuality.LowQuality,
       deleteOrigin: false,
       includeAudio: true,
+      frameRate: 24,
     );
     print(info!.path);
     setState(() {
