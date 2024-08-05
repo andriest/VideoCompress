@@ -141,6 +141,8 @@ class VideoCompressPlugin : MethodCallHandler, FlutterPlugin {
                 val dataSource = if (startTime != null || duration != null){
                     val source = UriDataSource(context, Uri.parse(path))
                     TrimDataSource(source, (1000 * 1000 * (startTime ?: 0)).toLong(), (1000 * 1000 * (duration ?: 0)).toLong())
+                    // Log.w(TAG, "Start time " + startTime)
+                    // Log.w(TAG, "Duration " + duration)
                 }else{
                     UriDataSource(context, Uri.parse(path))
                 }

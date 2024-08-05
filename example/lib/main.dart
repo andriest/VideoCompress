@@ -83,6 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
       quality: VideoQuality.LowQuality,
       deleteOrigin: false,
       includeAudio: true,
+      startTime: 1,
+      duration: 28,
       frameRate: 24,
     );
     print(info!.path);
